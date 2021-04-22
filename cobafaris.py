@@ -21,13 +21,17 @@ not_weared_mask_font_color = (0, 0, 255)
 thickness = 2
 font_scale = 0.5
 weared_mask = "Terima Kasih Telah Menggunakan Masker"
-not_weared_mask = "Anda Dilarang Masuk! Silahkan Pakai Masker dulu! "
+not_weared_mask = "Silahkan Pakai Masker dulu! "
 noface = "Wajah Tidak Ditemukan! "
+jumlahfps = "Frames per second : "
 
 # Read video
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 while 1:
+    # FPS COUNTER
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
     # Get individual frame
     ret, img = cap.read()
     img = cv2.flip(img,1)
@@ -47,10 +51,10 @@ while 1:
 
 
     if(len(faces) == 0 and len(faces_bw) == 0):
-        cv2.putText(img, noface, org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
+        cv2.putText(img, noface + "| " + jumlahfps + format(fps), org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
     elif(len(faces) == 0 and len(faces_bw) == 1):
         # It has been observed that for white mask covering mouth, with gray image face prediction is not happening
-        cv2.putText(img, weared_mask, org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
+        cv2.putText(img, weared_mask + "| " + jumlahfps + format(fps), org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
     else:
         # Draw rectangle on gace
         for (x, y, w, h) in faces:
@@ -61,15 +65,16 @@ while 1:
             mouth_rects = mouth_cascade.detectMultiScale(gray, 1.5, 5)
         # Face detected but Lips not detected which means person is wearing mask
         if(len(mouth_rects) == 0 ):
-            cv2.putText(img, weared_mask, org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
+            cv2.putText(img, weared_mask + "| " + jumlahfps + format(fps), org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
         else:
             for (mx, my, mw, mh) in mouth_rects:
                 if(y < my < y + h):
                     # Face and Lips are detected but lips coordinates are within face cordinates which `means lips prediction is true and
                     # person is not waring mask
-                    cv2.putText(img, not_weared_mask, org, font, font_scale, not_weared_mask_font_color, thickness, cv2.LINE_AA)
+                    cv2.putText(img, not_weared_mask + "| " + jumlahfps + format(fps), org, font, font_scale, not_weared_mask_font_color, thickness, cv2.LINE_AA)
                     cv2.rectangle(img, (mx, my), (mx + mh, my + mw), (255, 0, 0), 3)
                     break
+
 
     # Show frame with results
     cv2.imshow('Mask Detection', img)
