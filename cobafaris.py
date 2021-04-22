@@ -14,14 +14,15 @@ upper_body = cv2.CascadeClassifier('haarcascade_upperbody.xml')
 bus = SMBus(1)
 sensor = MLX90614(bus, address=0x5A)
 
-# Adjust threshold value in range 80 to 105 based on your light.
+# set parameter video hitam putih
 bw_threshold = 80
 
-# User message
+# pesan
 font = cv2.FONT_HERSHEY_SIMPLEX
 orgbaris1 = (30, 30)
 orgbaris2 = (30,50)
 orgbaris3 = (30,70)
+orgbaris4= ( 30, 90)
 wfontnoface = (0,0,0)
 wfontwmask = (255, 255, 255)
 wfontnomask = (0, 0, 255)
@@ -32,20 +33,25 @@ maskerno = "Silahkan Pakai Masker dulu! "
 noface = "Wajah Tidak Ditemukan! "
 jumlahfps = "Frames per second : "
 suhubadan = "Suhu badan anda : "
-nilaisuhu = sensor.get_object_1()
+pesanakhir1 = "Anda Dilarang Masuk! "
+pesanakhir2 = "Silahkan Masuk! "
 
-# Read video
+
+# membaca video
 cap = cv2.VideoCapture(0)
 
 while 1:
     # FPS COUNTER
     fps = cap.get(cv2.CAP_PROP_FPS)
+    
+    #nilai suhu
+    nilaisuhu = sensor.get_object_1()
 
-    # Get individual frame
+    # membaca setiap frame
     ret, img = cap.read()
     img = cv2.flip(img,1)
 
-    # Convert Image into gray
+    # konversi gambar ke grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Convert image in black and white
@@ -59,15 +65,23 @@ while 1:
     faces_bw = face_cascade.detectMultiScale(black_and_white, 1.1, 4)
 
 
-    if(len(faces) == 0 and len(faces_bw) == 0):
+    if(len(faces) == 0 and len(faces_bw) == 0 ):
         cv2.putText(img, noface , orgbaris1, font, font_scale, wfontnoface, thickness, cv2.LINE_AA)
         cv2.putText(img,  jumlahfps + format(fps), orgbaris2, font, font_scale, wfontnoface, thickness, cv2.LINE_AA)
         cv2.putText(img, suhubadan + str(nilaisuhu) , orgbaris3, font, font_scale, wfontnoface, thickness, cv2.LINE_AA)
-    elif(len(faces) == 0 and len(faces_bw) == 1):
+        cv2.putText(img, pesanakhir1 , orgbaris4, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
+    elif(len(faces) == 0 and len(faces_bw) == 1 and nilaisuhu >= 38):
         # It has been observed that for white mask covering mouth, with gray image face prediction is not happening
         cv2.putText(img, maskerada , orgbaris1, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
         cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
         cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+        cv2.putText(img, pesanakhir1 , orgbaris4, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
+    elif(len(faces) == 0 and len(faces_bw) == 1 and nilaisuhu < 38 ):
+        # It has been observed that for white mask covering mouth, with gray image face prediction is not happening
+        cv2.putText(img, maskerada , orgbaris1, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+        cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+        cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+        cv2.putText(img, pesanakhir2 , orgbaris4, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
     else:
         # Draw rectangle on gace
         for (x, y, w, h) in faces:
@@ -77,10 +91,16 @@ while 1:
             # Detect lips counters
             mouth_rects = mouth_cascade.detectMultiScale(gray, 1.5, 5)
         # Face detected but Lips not detected which means person is wearing mask
-        if(len(mouth_rects) == 0 ):
+        if(len(mouth_rects) == 0 and nilaisuhu >= 38):
             cv2.putText(img, maskerada , orgbaris1, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
             cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
             cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+            cv2.putText(img, pesanakhir1 , orgbaris4, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
+        if(len(mouth_rects) == 0 and nilaisuhu < 38 ):
+            cv2.putText(img, maskerada , orgbaris1, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+            cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+            cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+            cv2.putText(img, pesanakhir2 , orgbaris4, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
         else:
             for (mx, my, mw, mh) in mouth_rects:
                 if(y < my < y + h):
@@ -89,6 +109,7 @@ while 1:
                     cv2.putText(img, maskerno , orgbaris1, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
                     cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
                     cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
+                    cv2.putText(img, pesanakhir1 , orgbaris4, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
                     cv2.rectangle(img, (mx, my), (mx + mh, my + mw), (255, 0, 0), 3)
                     break
                     
