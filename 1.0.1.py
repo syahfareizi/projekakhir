@@ -1,4 +1,4 @@
-#masker tanpa suhu foto
+#masker tanpa suhu video
 import numpy as np
 import cv2
 import random
@@ -43,7 +43,7 @@ def ambilgambar():
     cond, imge =cap.read()
     out = cv2.imwrite("filename.jpg",imge)
     
-def noface():
+def nofaces():
     cv2.putText(img, noface , orgbaris1, font, font_scale, wfontnoface, thickness, cv2.LINE_AA)
     cv2.putText(img,  jumlahfps + format(fps), orgbaris2, font, font_scale, wfontnoface, thickness, cv2.LINE_AA)
     #cv2.putText(img, suhubadan + str(nilaisuhu) , orgbaris3, font, font_scale, wfontnoface, thickness, cv2.LINE_AA)
@@ -69,7 +69,7 @@ def nomaskernosuhu():
     #cv2.putText(img, pesanakhir1 , orgbaris4, font, font_scale, wfontnomask, thickness, cv2.LINE_AA)
     
 # membaca video
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 # fps
 waktusebelum = 0
@@ -83,14 +83,14 @@ while 1:
     #nilaisuhu = sensor.get_object_1()
     
     #ambilgambar
-    ambilgambar()
+    #ambilgambar()
     
     #baca gambar
     img = cv2.imread('filename.jpg')
 
     # membaca setiap frame
-    #ret, img = cap.read()
-    #img = cv2.flip(img,1)
+    ret, img = cap.read()
+    img = cv2.flip(img,1)
 
     # konversi gambar ke grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -105,12 +105,8 @@ while 1:
     # Face prediction for black and white
     faces_bw = face_cascade.detectMultiScale(black_and_white, 1.1, 4)
 
-    if(len(faces) == 0 and len(faces_bw) == 0 ):
-        nomaskernosuhu()
-    if(len(faces) == 1 and len(faces_bw) == 0 ):
-        maskernosuhu()
-    if(len(faces) == 1 and len(faces_bw) == 0 ):
-        maskersuhu()
+    if(len(faces) == 0 ):
+        nofaces ()
     else:
         # Draw rectangle on gace
         for (x, y, w, h) in faces:
@@ -120,16 +116,16 @@ while 1:
             # Detect lips counters
             mouth_rects = mouth_cascade.detectMultiScale(gray, 1.5, 5)
         # Face detected but Lips not detected which means person is wearing mask
-        if(len(mouth_rects) == 0  ):
-            maskernosuhu()
-        if(len(mouth_rects) == 0 ):
-            maskersuhu()
-        else:
-            for (mx, my, mw, mh) in mouth_rects:
-                if(y < my < y + h):
-                    cv2.rectangle(img, (mx, my), (mx + mh, my + mw), (255, 0, 0), 3)
-                    nomaskernosuhu()
-                    break
+            if(len(mouth_rects) == 0  ):
+                maskernosuhu()
+            if(len(mouth_rects) == 0 ):
+                maskersuhu()
+            else:
+                for (mx, my, mw, mh) in mouth_rects:
+                    if(y < my < y + h):
+                        cv2.rectangle(img, (mx, my), (mx + mh, my + mw), (255, 0, 0), 3)
+                        nomaskernosuhu()
+                        break
     
     waktusesudah = time.time()
     
