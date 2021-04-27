@@ -1,15 +1,20 @@
-# final_version dengan sensor suhu
+# 1.0
 import numpy as np
 import cv2
 import random
 from smbus2 import SMBus
 from mlx90614 import MLX90614
+import RPi.GPIO as GPIO
+import time
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
-mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
+mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_nose.xml')
 upper_body = cv2.CascadeClassifier('haarcascade_upperbody.xml')
-
+#servo
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(11,GPIO.OUT)
+servo1 = GPIO.PWM(11,50) # 11 adalah nomer pin yang digunakan , 50 = 50Hz pulse
 #sensor suhu
 bus = SMBus(1)
 sensor = MLX90614(bus, address=0x5A)
@@ -36,20 +41,29 @@ suhubadan = "Suhu badan anda : "
 pesanakhir1 = "Anda Dilarang Masuk! "
 pesanakhir2 = "Silahkan Masuk! "
 
+def ambilgambar():
+    cam = cv2.VideoCapture(1)   
+    s, pic = cam.read()
+    out = cv2.imwrite("filename.jpg",pic)
+    time.sleep(0.25)
 
-# membaca video
-cap = cv2.VideoCapture(0)
 
 while 1:
+    
+    # Mengambil gambar
+    ambilgambar()
+    
     # FPS COUNTER
     fps = cap.get(cv2.CAP_PROP_FPS)
     
     #nilai suhu
     nilaisuhu = sensor.get_object_1()
+    
+    #servo
+    servo1.start(0)
 
-    # membaca setiap frame
-    ret, img = cap.read()
-    img = cv2.flip(img,1)
+    # membaca setiap gambar
+    img = cv2.imread('filename.jpg')
 
     # konversi gambar ke grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -82,6 +96,7 @@ while 1:
         cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
         cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
         cv2.putText(img, pesanakhir2 , orgbaris4, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+        servo1.ChangeDutyCycle(7)
     else:
         # Draw rectangle on gace
         for (x, y, w, h) in faces:
@@ -101,6 +116,7 @@ while 1:
             cv2.putText(img, jumlahfps + format(fps), orgbaris2, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
             cv2.putText(img, suhubadan + str(nilaisuhu), orgbaris3, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
             cv2.putText(img, pesanakhir2 , orgbaris4, font, font_scale, wfontwmask, thickness, cv2.LINE_AA)
+            servo1.ChangeDutyCycle(7)
         else:
             for (mx, my, mw, mh) in mouth_rects:
                 if(y < my < y + h):
