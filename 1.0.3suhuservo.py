@@ -14,8 +14,8 @@ mask_cascade = cv2.CascadeClassifier ('cascade.xml')
 
 #servo
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(11,GPIO.OUT)
-servo1 = GPIO.PWM(11,50) # 11 adalah nomer pin yang digunakan , 50 = 50Hz pulse
+GPIO.setup(7,GPIO.OUT)
+servo1 = GPIO.PWM(7,50) # 7 adalah nomer pin yang digunakan , 50 = 50Hz pulse
 
 #sensor suhu
 bus = SMBus(1)
