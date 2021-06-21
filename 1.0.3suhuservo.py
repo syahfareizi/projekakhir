@@ -1,4 +1,4 @@
-#masker tanpa suhu video
+#masker dengan suhu video
 import numpy as np
 import cv2
 import random
@@ -15,7 +15,7 @@ mask_cascade = cv2.CascadeClassifier ('cascade.xml')
 #servo
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(7,GPIO.OUT)
-servo1 = GPIO.PWM(7,50) # 7 adalah nomer pin yang digunakan , 50 = 50Hz pulse
+servo1 = GPIO.PWM(7,50) # 11 adalah nomer pin yang digunakan , 50 = 50Hz pulse
 
 #sensor suhu
 bus = SMBus(1)
@@ -72,13 +72,9 @@ def nomaskernosuhu():
     
 def servoopen():
     cap.release()
-    servo1.ChangeDutyCycle(7)
+    servo1.ChangeDutyCycle(6)
 def servoclose():
-    duty = 7
-    while duty >=0 :
-        servo1.ChangeDutyCycle(duty)
-        time.sleep(0.5)
-        duty = duty - 1
+    servo1.ChangeDutyCycle(12.5)
         
 def change_res(width, height):
     cap.set(3, width)
@@ -89,14 +85,17 @@ cap = cv2.VideoCapture(0)
 
 change_res(100,100)
 
-#servo
-servo1.start(0)
-
 # fps
 waktusebelum = 0
 waktusesudah = 0
 
+servo1.start(0)
+
+
 while 1:
+    #servo
+    servo1.ChangeDutyCycle(2)
+    
     #nilai suhu
     nilaisuhu = sensor.get_object_1()
 
@@ -118,7 +117,7 @@ while 1:
     #cv2.imshow('black_and_white', black_and_white)
 
     # detect face
-    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    faces = face_cascade.detectMultiScale(gray, 1.1, 6)
 
     # Face prediction for black and white
     #faces_bw = face_cascade.detectMultiScale(black_and_white, 1.1, 4)
@@ -142,7 +141,7 @@ while 1:
                     break
                 servoopen()
                 time.sleep(5)
-                servoclose()
+                #servoclose()
                 # membaca video
                 cap = cv2.VideoCapture(0)
                 change_res(100,100)
