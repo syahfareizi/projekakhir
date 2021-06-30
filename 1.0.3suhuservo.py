@@ -9,7 +9,7 @@ import RPi.GPIO as GPIO
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 #eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
-mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_nose.xml')
+nose_cascade = cv2.CascadeClassifier('haarcascade_mcs_nose.xml')
 mask_cascade = cv2.CascadeClassifier ('cascade.xml')
 
 #servo
@@ -131,10 +131,10 @@ while 1:
             roi_gray = gray[y:y + h, x:x + w]
             roi_color = img[y:y + h, x:x + w]
             # Detect lips counters
-            mouth_rects = mouth_cascade.detectMultiScale(gray, 1.5, 5)
+            nose_rects = nose_cascade.detectMultiScale(gray, 1.5, 5)
             adamasker = mask_cascade.detectMultiScale(gray, 1.1, 4 )
             # Face detected but Lips not detected which means person is wearing mask
-            if(len(mouth_rects) == 0 and len(adamasker)==1 and nilaisuhu < 38 ):
+            if(len(nose_rects) == 0 and len(adamasker)==1 and nilaisuhu < 38 ):
                 for (kx, ky, kw, kh) in adamasker :
                     cv2.rectangle(img, (kx, ky), (kx + kh, ky + kw), (255, 0, 255), 3)
                     maskersuhu()
@@ -145,16 +145,16 @@ while 1:
                 # membaca video
                 cap = cv2.VideoCapture(0)
                 change_res(100,100)
-            elif(len(mouth_rects) == 0 and len(adamasker)==0):
+            elif(len(nose_rects) == 0 and len(adamasker)==0):
                 nomaskernosuhu()
-            elif(len(mouth_rects) == 1 and len(adamasker)== 1):
-                for (mx, my, mw, mh) in mouth_rects:
+            elif(len(nose_rects) == 1 and len(adamasker)== 1):
+                for (mx, my, mw, mh) in nose_rects:
                     cv2.rectangle(img, (mx, my), (mx + mh, my + mw), (255, 0, 0), 3)
                     nomaskernosuhu()
                 for (kx, ky, kw, kh) in adamasker :
                     cv2.rectangle(img, (kx, ky), (kx + kh, ky + kw), (255, 0, 255), 3)
             else:
-                for (mx, my, mw, mh) in mouth_rects:
+                for (mx, my, mw, mh) in nose_rects:
                     cv2.rectangle(img, (mx, my), (mx + mh, my + mw), (255, 0, 0), 3)
                     nomaskernosuhu()
                     break
